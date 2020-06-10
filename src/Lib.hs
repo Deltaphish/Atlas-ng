@@ -39,13 +39,6 @@ displayEpisode (Episode shnm snm snr enm enr)
 
 type Parser = Parsec Void Text
 
-mySequence :: Parser (String, String)
-mySequence = do
-    a <- many $ satisfy isAlphaNum
-    chunk " - "
-    c <- many $ satisfy isAlphaNum
-    return(a,c)
-
 -- Parse "showName - epnr"
 parseFileFormat_1 :: Parser Episode
 parseFileFormat_1 = do

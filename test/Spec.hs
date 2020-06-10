@@ -64,8 +64,6 @@ instance Arbitrary Episode where
         epnr <- choose (0,999)
         return $ Episode (Just shnm) (Just snm) (Just snr) (Just epnm) (Just epnr)
 
-type Path = T.Text
-
 instance Arbitrary EpisodeTest where
     arbitrary = do
         e <- arbitrary :: Gen Episode
@@ -75,16 +73,6 @@ instance Arbitrary EpisodeTest where
         file <- formatGen fileFormat e
         let fEpisode = formatEpisode e dirFormat fileFormat
         return $ EpisodeTest fEpisode dirFormat fileFormat $ T.concat [dir,"/",file]
-
-compareEpisode :: Episode -> Episode -> Bool
-compareEpisode (Episode rshn rsen rsnr repn renr) (Episode shn sen snr epn enr) =
-        all compare paired where
-        refrence = [rshn, rsen, T.pack.show <$> rsnr, repn, T.pack.show <$> renr]
-        result   = [shn, sen, T.pack.show <$> snr, epn, T.pack.show <$> enr]
-        paired  = zip refrence result
-        compare (_,Nothing) = True
-        compare (Just a,Just b) = a == b
-        compare _ = error "Empty refrence field in compareEpisode"
 
 generateTag :: Gen T.Text
 generateTag = do
