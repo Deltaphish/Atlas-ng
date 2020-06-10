@@ -19,7 +19,7 @@ data Episode = Episode {
     seasonNr :: Maybe Int,
     episodeName :: Maybe Text,
     episodeNr :: Maybe Int
-} deriving Show
+} deriving (Show,Eq)
 
 sup :: Maybe a -> Maybe a -> Maybe a
 Nothing `sup` (Just b) = Just b 
@@ -29,7 +29,7 @@ Nothing `sup` Nothing = Nothing
 
 instance Semigroup Episode where
     (Episode shn1 sn1 snr1 en1 enr1) <> (Episode shn2 sn2 snr2 en2 enr2) =
-        Episode (shn1 `sup` shn2) (sn1 `sup` sn1) (snr1 `sup` snr2) (en1 `sup` en2) (enr1 `sup` enr2)
+        Episode (shn1 `sup` shn2) (sn1 `sup` sn2) (snr1 `sup` snr2) (en1 `sup` en2) (enr1 `sup` enr2)
 
 displayEpisode :: Episode -> Text
 displayEpisode (Episode shnm snm snr enm enr)
@@ -69,7 +69,7 @@ parseFileFormat_3 = do
     snm <- manyTill printChar (string' "-")
     space
     epnr <- some digitChar
-    return $ Episode (Just $ T.pack shnm) (Just $ T.pack snm) Nothing Nothing (readMaybe epnr)
+    return $ Episode (Just $ T.strip $ T.pack $ shnm) (Just $ T.strip $ T.pack snm) Nothing Nothing (readMaybe epnr)
 
     
 -- Parse "showName - seasoneName"
@@ -80,7 +80,7 @@ parseDirFormat_1 = do
     snm  <- some printChar
     return $ Episode (Just $ T.strip $ T.pack shnm) (Just $ T.strip $ T.pack snm) Nothing Nothing Nothing
 
--- Parse "showName 'Season' seasonNr"
+-- Parse "showName '[sS]eason' seasonNr"
 parseDirFormat_2 :: Parser Episode
 parseDirFormat_2 = do
     shnm <- manyTill (satisfy (\c -> isAlphaNum c || c == ' ')) (string' " Season ")
@@ -91,10 +91,10 @@ parseDirFormat_2 = do
 
 
 parseEpisodefromFile :: Parser Episode
-parseEpisodefromFile = try parseFileFormat_3 <|> try parseFileFormat_1 <|> parseFileFormat_2
+parseEpisodefromFile = try parseFileFormat_3 <|> try parseFileFormat_1 <|> try parseFileFormat_2
 
 parseEpisodefromDir :: Parser Episode
-parseEpisodefromDir = try parseDirFormat_2 <|> parseDirFormat_1
+parseEpisodefromDir = try parseDirFormat_1 <|> try parseDirFormat_2
 
 
 run :: Text -> Maybe Episode
