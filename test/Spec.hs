@@ -16,12 +16,13 @@ import Sanitize
 genValidName :: Gen T.Text
 genValidName = genValidUtf81 `suchThat` (all isAlphaNum . T.unpack)
 
-data Format = F1 | F2 | F3 | D1 | D2 deriving (Eq,Show)
+data Format = F1 | F2 | F3 | F4 | D1 | D2 deriving (Eq,Show)
 
 formatGen :: Format -> (Episode -> Gen T.Text)
 formatGen F1 = genFileFormat_1
 formatGen F2 = genFileFormat_2
 formatGen F3 = genFileFormat_3
+formatGen F4 = genFileFormat_4
 formatGen D1 = genDirFormat_1
 formatGen D2 = genDirFormat_2
 
@@ -31,6 +32,7 @@ bitmap :: Format -> Int
 bitmap F1 = 0b10001
 bitmap F2 = 0b10001
 bitmap F3 = 0b11001
+bitmap F4 = 0b10111
 bitmap D1 = 0b11000
 bitmap D2 = 0b10100
 
@@ -69,7 +71,7 @@ instance Arbitrary EpisodeTest where
         e <- arbitrary :: Gen Episode
         dirFormat <- elements [D1,D2]
         dir <- formatGen dirFormat e
-        fileFormat <- elements [F1,F2,F3]
+        fileFormat <- elements [F1,F2,F3,F4]
         file <- formatGen fileFormat e
         let fEpisode = formatEpisode e dirFormat fileFormat
         return $ EpisodeTest fEpisode dirFormat fileFormat $ T.concat [dir,"/",file]
@@ -107,6 +109,17 @@ genFileFormat_3 e = do
     tag2 <- generateTag
     tag3 <- generateTag
     return $ T.concat [tag1,shnm," - ",snm,tag2," - ",tag3," ",epnr,".mkv"]
+
+genFileFormat_4 :: Episode -> Gen T.Text
+genFileFormat_4 e = do
+    let shnm = fromJust $ showName e
+    let epnr = T.pack $ show $ fromJust $ episodeNr e
+    let epnm = fromJust $ episodeName e
+    let senr = T.pack $ show $ fromJust $ seasonNr e
+    tag1 <- generateTag
+    tag2 <- generateTag
+    tag3 <- generateTag
+    return $ T.concat [tag1,shnm," - S",senr,"E",epnr," ",epnm," ",tag2,tag3,".mkv"]
 
 genDirFormat_1 :: Episode -> Gen T.Text
 genDirFormat_1 e = do
