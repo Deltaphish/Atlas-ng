@@ -132,6 +132,17 @@ parseFileFormat_9 = do
     epnr <- endingEpisodeNr
     return $ Episode Nothing Nothing Nothing Nothing (Just epnr)
 
+-- Parse "'Episode' EpNR - EPtTitle"
+parseFileFormat_10 :: Parser Episode
+parseFileFormat_10 = do
+    string' "episode"
+    space
+    epnr <- some digitChar
+    space
+    optional (char '-')
+    epnm <- some printChar
+    return $ Episode Nothing Nothing Nothing (Just $ T.strip $ T.pack $ epnm) (readMaybe epnr)
+
 
 endingEpisodeNr :: Parser Int
 endingEpisodeNr = do
@@ -160,6 +171,7 @@ parseDirFormat_2 = do
 
 parseEpisodefromFile :: Parser Episode
 parseEpisodefromFile = try parseFileFormat_9 <|>
+                    try parseFileFormat_10 <|>
                     try parseFileFormat_5 <|>
                     try parseFileFormat_6 <|>
                     try parseFileFormat_3 <|>
