@@ -71,7 +71,10 @@ parseSE = try parseSE_SnEn <|> try parseSE_nxn
         parseSE_SnEn = do
             char' 's'
             seasonNr <- some digitChar
-            char' 'e'
+            space
+            optional (char '-')
+            space
+            optional (char' 'e')
             episodeNr <- some digitChar
             return $ (read seasonNr, read episodeNr)
 
@@ -116,6 +119,14 @@ parseFileFormat_7 = do
     epnr <- endingEpisodeNr
     return $ Episode (Just $ T.strip $ T.pack $ shnm) Nothing Nothing Nothing (Just epnr)
 
+-- Parse "Showname 'S'SNR NR"
+parseFileFormat_8 :: Parser Episode
+parseFileFormat_8 = do
+    shnm <- printChar `someTill` (try $ lookAhead parseSE)
+    (snr,epnr) <- parseSE
+    return $ Episode (Just $ T.strip $ T.pack $ shnm) Nothing (Just snr) Nothing (Just epnr)
+
+
 endingEpisodeNr :: Parser Int
 endingEpisodeNr = do
     epnr' <- some digitChar
@@ -148,6 +159,7 @@ parseEpisodefromFile = try parseFileFormat_5 <|>
                     try parseFileFormat_1 <|>
                     try parseFileFormat_4 <|>
                     try parseFileFormat_2 <|>
+                    try parseFileFormat_8 <|>
                     parseFileFormat_7
 
 parseEpisodefromDir :: Parser Episode
