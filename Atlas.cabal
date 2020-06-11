@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2f6ad1229161bc51720a8910b89516f9eb279211df1423a35307bf66dad65935
+-- hash: 80bfd75dc446c8c78dc9f1218bcafc70fb5fd4027158a875f757f5a61d292c89
 
 name:           Atlas
 version:        0.1.0.0
@@ -36,7 +36,9 @@ library
   hs-source-dirs:
       src
   build-depends:
-      QuickCheck >=2.13 && <3
+      HDBC >=2.4 && <3
+    , HDBC-sqlite3
+    , QuickCheck >=2.13 && <3
     , base >=4.7 && <5
     , directory >=1.3
     , ghc >=8.8 && <9
@@ -55,6 +57,8 @@ executable Atlas-exe
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Atlas
+    , HDBC >=2.4 && <3
+    , HDBC-sqlite3
     , QuickCheck >=2.13 && <3
     , base >=4.7 && <5
     , directory >=1.3
@@ -76,6 +80,8 @@ test-suite Atlas-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Atlas
+    , HDBC >=2.4 && <3
+    , HDBC-sqlite3 >= 2 && <3
     , QuickCheck >=2.13 && <3
     , base >=4.7 && <5
     , directory >=1.3

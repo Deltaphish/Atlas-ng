@@ -28,6 +28,8 @@ dependencies:
 - QuickCheck >= 2.13 && < 3
 - quickcheck-text >= 0.1.2 && < 0.2
 - parser-combinators >= 1.2 && < 2
+- HDBC >= 2.4 && < 3
+- HDBC-sqlite3
 
 library:
   source-dirs: src
