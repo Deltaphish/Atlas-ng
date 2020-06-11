@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 89e3fd99f65e8df65c64448d4b071f9dad1230563532ebc04e4af82e1726ad83
+-- hash: 2f6ad1229161bc51720a8910b89516f9eb279211df1423a35307bf66dad65935
 
 name:           Atlas
 version:        0.1.0.0
@@ -27,7 +27,9 @@ source-repository head
 
 library
   exposed-modules:
+      Episode
       Lib
+      PathParser
       Sanitize
   other-modules:
       Paths_Atlas
@@ -67,6 +69,7 @@ test-suite Atlas-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      PathParserTest
       Paths_Atlas
   hs-source-dirs:
       test
