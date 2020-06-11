@@ -126,6 +126,12 @@ parseFileFormat_8 = do
     (snr,epnr) <- parseSE
     return $ Episode (Just $ T.strip $ T.pack $ shnm) Nothing (Just snr) Nothing (Just epnr)
 
+-- Parse "EpNR"
+parseFileFormat_9 :: Parser Episode
+parseFileFormat_9 = do
+    epnr <- endingEpisodeNr
+    return $ Episode Nothing Nothing Nothing Nothing (Just epnr)
+
 
 endingEpisodeNr :: Parser Int
 endingEpisodeNr = do
@@ -153,7 +159,8 @@ parseDirFormat_2 = do
 
 
 parseEpisodefromFile :: Parser Episode
-parseEpisodefromFile = try parseFileFormat_5 <|>
+parseEpisodefromFile = try parseFileFormat_9 <|>
+                    try parseFileFormat_5 <|>
                     try parseFileFormat_6 <|>
                     try parseFileFormat_3 <|>
                     try parseFileFormat_1 <|>
