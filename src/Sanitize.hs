@@ -11,7 +11,9 @@ sanitiseFileName :: Text -> Text
 sanitiseFileName = sanitisePath . removeSuffix
 
 removeSuffix :: Text -> Text
-removeSuffix t = T.init $ dropWhileEnd (/= '.') t
+removeSuffix t = case dropWhileEnd (/= '.') t of
+                    "" -> ""
+                    a -> T.init a
 
 spacersToSpace :: Text -> Text
 spacersToSpace = T.replace "_" " " . T.replace "." " "
@@ -23,5 +25,10 @@ removeTags t
     | c == '('  = removeTags $ removeTag ')' cs
     | otherwise = c `cons` removeTags cs
     where
-        (c,cs) = (T.head t,T.tail t)
-        removeTag end = T.tail . T.dropWhile (/= end)
+        c = T.head t
+        cs = case t of
+                "" -> T.empty
+                a -> T.tail a
+        removeTag end cs = case T.dropWhile (/= end) cs of
+                            "" -> T.empty
+                            a  -> T.tail a

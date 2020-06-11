@@ -212,8 +212,8 @@ parseEpisodefromDir = try parseDirFormat_1 <|> try parseDirFormat_2
 
 
 -- run parse on dir and file, then combine the result.
-run :: Text -> Maybe Episode
-run t = case parsedFile of
+runP :: Text -> Maybe Episode
+runP t = case parsedFile of
             Nothing -> parsedDir
             Just e -> case parsedDir of
                         Nothing -> Just e
@@ -221,6 +221,8 @@ run t = case parsedFile of
     where
         (d,f) = T.breakOn "/" t
         cleanDir = sanitisePath d
-        cleanFile = sanitiseFileName $ T.tail f
+        cleanFile = case f of
+                    "" -> ""
+                    f' -> sanitiseFileName $ T.tail f'
         parsedFile = parseMaybe parseEpisodefromFile cleanFile
         parsedDir = parseMaybe parseEpisodefromDir cleanDir

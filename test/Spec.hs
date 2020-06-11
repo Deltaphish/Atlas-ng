@@ -10,7 +10,7 @@ main = do
 
 prop_parseEpisode :: EpisodeTest -> Property
 prop_parseEpisode (EpisodeTest e _ _ p) = 
-    case run p of
+    case runP p of
         Nothing -> property False
         Just e' -> e === e'
 
