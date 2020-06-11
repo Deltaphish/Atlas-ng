@@ -69,6 +69,8 @@ parseSE :: Parser (Int,Int)
 parseSE = try parseSE_SnEn <|> try parseSE_nxn <|> try paseSE_N_En
     where
         parseSE_SnEn = do
+            space
+            optional (char '-')
             char' 's'
             seasonNr <- some digitChar
             space
@@ -79,6 +81,8 @@ parseSE = try parseSE_SnEn <|> try parseSE_nxn <|> try paseSE_N_En
             return $ (read seasonNr, read episodeNr)
 
         parseSE_nxn = do
+            space
+            optional (char '-')
             seasonNr <- some digitChar
             char' 'x'
             episodeNr <- some digitChar
@@ -100,6 +104,7 @@ parseFileFormat_4 = do
     space
     (snr,epnr) <- parseSE
     space
+    optional (char '-')
     epnm <- some printChar
     return $ Episode (Just $ T.strip $ T.pack $ shnm) Nothing (Just snr) (Just $ T.strip $ T.pack $ epnm) (Just epnr)
 
@@ -208,11 +213,11 @@ parseEpisodefromFile :: Parser Episode
 parseEpisodefromFile = try parseFileFormat_9 <|>
                     try parseFileFormat_10 <|>
                     try parseFileFormat_11 <|>
+                    try parseFileFormat_4 <|>
                     try parseFileFormat_5 <|>
                     try parseFileFormat_6 <|>
                     try parseFileFormat_3 <|>
                     try parseFileFormat_1 <|>
-                    try parseFileFormat_4 <|>
                     try parseFileFormat_12 <|>
                     try parseFileFormat_2 <|>
                     try parseFileFormat_8 <|>
