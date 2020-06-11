@@ -66,7 +66,7 @@ parseFileFormat_3 = do
     return $ Episode (Just $ T.strip $ T.pack $ shnm) (Just $ T.strip $ T.pack snm) Nothing Nothing (readMaybe epnr)
 
 parseSE :: Parser (Int,Int)
-parseSE = try parseSE_SnEn <|> try parseSE_nxn
+parseSE = try parseSE_SnEn <|> try parseSE_nxn <|> try paseSE_N_En
     where
         parseSE_SnEn = do
             char' 's'
@@ -82,6 +82,15 @@ parseSE = try parseSE_SnEn <|> try parseSE_nxn
             seasonNr <- some digitChar
             char' 'x'
             episodeNr <- some digitChar
+            return $ (read seasonNr, read episodeNr)
+
+        paseSE_N_En = do
+            optional printChar
+            seasonNr <- some digitChar
+            some spaceChar :: Parser [Char]
+            char' 'e'
+            episodeNr <- some digitChar
+            some spaceChar
             return $ (read seasonNr, read episodeNr)
 
 -- Parse "showName - SE - eptitle"
