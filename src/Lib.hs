@@ -162,12 +162,30 @@ parseFileFormat_11 = do
     epnm <- some printChar
     return $ Episode Nothing Nothing (Just snr) (Just $ T.strip $ T.pack $ epnm) (Just epnr)
 
+-- Parse "showName - Ep - eptitle"
+parseFileFormat_12 :: Parser Episode
+parseFileFormat_12 = do
+    shnm <- someTill printChar (try $ lookAhead endingEpisodeNrThenTitle)
+    (epnr,eptitle) <- endingEpisodeNrThenTitle
+    return $ Episode (Just $ T.strip $ T.pack $ shnm) Nothing Nothing (Just eptitle) (Just epnr)
+
 endingEpisodeNr :: Parser Int
 endingEpisodeNr = do
     epnr' <- some digitChar
     space
     eof
     return $ read epnr'
+
+endingEpisodeNrThenTitle :: Parser (Int,T.Text)
+endingEpisodeNrThenTitle = do
+    spaceChar
+    epnr' <- some digitChar
+    optional spaceChar
+    optional (char '-')
+    space
+    eptitle' <- some printChar
+    eof
+    return $ (read epnr',T.strip $ T.pack eptitle')
 
 -- Parse "showName - seasoneName"
 parseDirFormat_1 :: Parser Episode
@@ -195,6 +213,7 @@ parseEpisodefromFile = try parseFileFormat_9 <|>
                     try parseFileFormat_3 <|>
                     try parseFileFormat_1 <|>
                     try parseFileFormat_4 <|>
+                    try parseFileFormat_12 <|>
                     try parseFileFormat_2 <|>
                     try parseFileFormat_8 <|>
                     parseFileFormat_7
