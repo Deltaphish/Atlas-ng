@@ -82,9 +82,11 @@ parseFileFormat_1 = do
 -- Parse "showName 'ep' epnr"
 parseFileFormat_2 :: Parser Episode
 parseFileFormat_2 = do
-    shnm <- printChar `someTill` string' " ep"
-    epnr <- skipManyTill space (some digitChar) 
-    return $ Episode (Just $ T.strip $ T.pack shnm) Nothing Nothing Nothing (readMaybe epnr)
+    shnm <- printChar `someTill` (try $ lookAhead (string' " ep" >> space >> endingEpisodeNr))
+    string' " ep"
+    space
+    epnr <- endingEpisodeNr
+    return $ Episode (Just $ T.strip $ T.pack shnm) Nothing Nothing Nothing (Just epnr)
 
 -- Parse "showName - seasonName - epnr"
 parseFileFormat_3 :: Parser Episode

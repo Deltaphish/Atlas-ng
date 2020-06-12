@@ -7,4 +7,4 @@ import Text.Megaparsec.Char
 import Control.Monad.Combinators
 
 main :: IO()
-main = undefined
+main = runAtlas "/home/pi/media/drive/data/torrents/Anime"

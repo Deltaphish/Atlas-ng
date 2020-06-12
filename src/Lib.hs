@@ -7,8 +7,11 @@ import Episode
 import Sanitize
 
 import Data.List
+import qualified Data.ByteString as B
 import System.Directory
 import Control.Monad
+
+import Codec.Binary.UTF8.String
 
 import Database.HDBC
 import Database.HDBC.Sqlite3
@@ -17,23 +20,28 @@ import qualified Data.Text as T
 
 import Data.Conduit
 import qualified Data.Conduit.Combinators as CC
+import Control.Monad.Trans.Resource
+import Control.Monad.IO.Class
 
-atlasPipeline :: [FilePath] -> Statement -> Statement -> ConduitT a0 c0 IO ()
-atlasPipeline files s1 s2 =  CC.yieldMany files .|
-                        CC.filter is_media              .|
-                        CC.map parse                 .|
-                        CC.concatMapAccum (\a s -> (s+1, [(s,fst a,snd a)])) 0 .|
-                        CC.map genSql                .|
-                        CC.mapM_ (exe s1 s2) >> (return ())
+
+atlasPipeline :: FilePath -> Statement -> Statement -> ConduitT () Void (ResourceT IO) ()
+atlasPipeline start s1 s2 = CC.sourceDirectoryDeep False start .|
+                                CC.filter is_media              .|
+                                CC.map parse                 .|
+                                CC.concatMapAccum (\a s -> (s+1, [(s,fst a,snd a)])) 0 .|
+                                CC.map genSql .|
+                                CC.mapM_ (exe s1 s2)
+
+
+                        
 
 runAtlas :: FilePath -> IO()
-runAtlas start = do
-    f <- search start
+runAtlas start = liftIO $ do
     conn <- connectSqlite3 "media.db"
     initTable conn
-    stmt1 <- prepare conn "INSERT INTO mediafiles VALUES (?,?)"
-    stmt2 <- prepare conn "INSERT INTO episodes VALUES (?,?,?,?,?,?)"
-    runConduit $ atlasPipeline f stmt1 stmt2
+    s1 <- prepare conn "INSERT INTO mediafiles VALUES (?,?)"
+    s2 <- prepare conn "INSERT INTO episodes VALUES (?,?,?,?,?,?)"
+    runConduitRes $ atlasPipeline start s1 s2
     commit conn
     disconnect conn
     return ()
@@ -49,11 +57,11 @@ genSql xs = (,) [toSql id, toSql fp] ep
                 Nothing -> []
                 Just e -> toSql id : episodeToSql e
 
-exe :: Statement -> Statement -> ([SqlValue],[SqlValue]) -> IO()
-exe s1 _ (fp,[]) = execute s1 fp >> (return ())
+exe :: Statement -> Statement -> ([SqlValue],[SqlValue]) -> ResourceT IO () 
+exe s1 _ (fp,[]) = (liftIO $ execute s1 fp) >> (return ())
 exe s1 s2 (fp,ep) = do
-    execute s1 fp
-    execute s2 ep
+    liftIO $ execute s1 fp
+    liftIO $ execute s2 ep
     return ()
         
 
